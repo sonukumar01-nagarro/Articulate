@@ -1,0 +1,88 @@
+<main class="min-h-screen bg-stone-50 text-stone-900 dark:bg-zinc-950 dark:text-zinc-50 md:grid md:grid-cols-[44%_1fr]">
+  <aside class="hidden min-h-screen flex-col justify-between bg-emerald-950 p-12 text-white dark:bg-zinc-900 md:flex">
+    <div>
+      <a class="brand" href="/" aria-label="Articulate home">articulate</a>
+      <app-theme-toggle />
+    </div>
+    <div class="my-auto max-w-md py-16">
+      <p class="text-xs font-semibold tracking-[.16em] text-lime-200">THE SPACE TO THINK CLEARLY</p>
+      <h1 class="mt-6 text-6xl font-normal leading-tight [font-family:Georgia,serif]">Find the words that move ideas <em
+          class="text-lime-200">forward.</em></h1>
+      <p class="mt-6 max-w-sm leading-relaxed text-white/70">A focused workspace for shaping your best thinking, one
+        idea at a time.</p>
+    </div>
+    <p class="text-xs text-white/50">© 2026 Articulate</p>
+  </aside>
+
+  <section class="flex min-h-screen items-center justify-center p-6 sm:p-10" aria-labelledby="login-title">
+    <div class="w-full max-w-sm">
+      <a class="brand mb-12 text-emerald-950 dark:text-zinc-50 md:hidden" href="/"
+        aria-label="Articulate home">articulate</a>
+      <p class="text-xs font-semibold tracking-[.16em] text-emerald-800 dark:text-zinc-300">WELCOME BACK</p>
+      <h2 id="login-title" class="mt-3 text-4xl font-normal [font-family:Georgia,serif]">{{ creatingAccount() ? 'Create your account' : 'Sign in to your space' }}</h2>
+      <p class="mt-3 text-stone-600 dark:text-zinc-400">Continue where your best ideas left off.</p>
+
+      <div class="mt-8 grid gap-3">
+        <button pButton type="button" variant="outlined" severity="primary" fluid [disabled]="signingIn() || !!pendingProfile()"
+          (click)="signInWithGoogle()">
+          <i class="pi pi-google" aria-hidden="true"></i>
+          Continue with Google
+        </button>
+        <button pButton type="button" variant="outlined" severity="primary" fluid disabled>
+          <i class="pi pi-facebook" aria-hidden="true"></i>
+          Facebook login coming soon
+        </button>
+      </div>
+
+      <p class="my-6 text-center text-sm text-stone-500 dark:text-zinc-400">or continue with email</p>
+      <p class="mb-3 text-xs text-stone-500 dark:text-zinc-400"><span class="required-mark" aria-hidden="true">*</span> Required fields</p>
+      <form novalidate #emailForm="ngForm" (ngSubmit)="submitEmail(emailForm)" class="grid gap-4" [attr.aria-busy]="signingIn()">
+        @if (creatingAccount()) {
+          <div class="grid gap-2">
+            <label for="name" class="text-sm font-medium">Name <span class="required-mark" aria-hidden="true">*</span></label>
+            <input id="name" name="name" type="text" autocomplete="name" required
+              [(ngModel)]="name" (blur)="validation.touch('name')" [attr.aria-invalid]="!!fieldError('name')" [attr.aria-describedby]="fieldError('name') ? 'name-error' : null" [disabled]="signingIn()" class="auth-input" />
+          @if (fieldError('name')) { <p id="name-error" class="field-error">{{ fieldError('name') }}</p> }
+          </div>
+        }
+        <div class="grid gap-2">
+          <label for="email" class="text-sm font-medium">Email <span class="required-mark" aria-hidden="true">*</span></label>
+          <input id="email" name="email" type="email" autocomplete="email" required email
+            [(ngModel)]="email" (blur)="validation.touch('email')" [attr.aria-invalid]="!!fieldError('email')" [attr.aria-describedby]="fieldError('email') ? 'email-error' : null" [disabled]="signingIn() || !!pendingProfile()" class="auth-input" />
+          @if (fieldError('email')) { <p id="email-error" class="field-error">{{ fieldError('email') }}</p> }
+        </div>
+        <div class="grid gap-2">
+          <label for="password" class="text-sm font-medium">Password <span class="required-mark" aria-hidden="true">*</span></label>
+          <input id="password" name="password" type="password" required
+            [attr.autocomplete]="creatingAccount() ? 'new-password' : 'current-password'"
+            [minlength]="creatingAccount() ? 6 : 1" [(ngModel)]="password" (blur)="validation.touch('password')" [attr.aria-invalid]="!!fieldError('password')" [attr.aria-describedby]="fieldError('password') ? 'password-error' : creatingAccount() ? 'password-hint' : null" [disabled]="signingIn() || !!pendingProfile()"
+             class="auth-input" />
+          @if (fieldError('password')) { <p id="password-error" class="field-error">{{ fieldError('password') }}</p> }
+          @if (creatingAccount()) {
+            <p id="password-hint" class="text-xs text-stone-500 dark:text-zinc-400">Use at least 6 characters.</p>
+          }
+        </div>
+        @if (creatingAccount()) {
+          <div class="grid gap-2">
+            <label for="confirm-password" class="text-sm font-medium">Confirm password <span class="required-mark" aria-hidden="true">*</span></label>
+            <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password"
+              required [(ngModel)]="confirmPassword" (blur)="validation.touch('confirmPassword')" [attr.aria-invalid]="!!fieldError('confirmPassword')" [attr.aria-describedby]="fieldError('confirmPassword') ? 'confirmPassword-error' : null" [disabled]="signingIn() || !!pendingProfile()" class="auth-input" />
+          @if (fieldError('confirmPassword')) { <p id="confirmPassword-error" class="field-error">{{ fieldError('confirmPassword') }}</p> }
+          </div>
+        }
+        <button pButton type="submit" fluid [disabled]="signingIn()">
+          {{ signingIn() ? 'Please wait…' : pendingProfile() ? 'Save name' : creatingAccount() ? 'Create account' : 'Sign in with email' }}
+        </button>
+      </form>
+      <button pButton type="button" variant="text" fluid class="mt-3" [disabled]="signingIn() || !!pendingProfile()" (click)="toggleMode()">
+        {{ creatingAccount() ? 'Already have an account? Sign in' : 'New here? Create an account' }}
+      </button>
+
+
+
+      <p class="mt-8 text-center text-xs leading-relaxed text-stone-500 dark:text-zinc-400">By continuing, you agree to
+        our <a class="underline" href="#terms">Terms of Service</a> and <a class="underline" href="#privacy">Privacy
+          Policy</a>.</p>
+    </div>
+  </section>
+</main>

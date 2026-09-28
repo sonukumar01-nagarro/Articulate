@@ -1,0 +1,78 @@
+<main class="min-h-screen bg-surface-50 text-color dark:bg-surface-950">
+  <app-site-header />
+  <div class="mx-auto max-w-4xl px-5 py-10 sm:px-8">
+    <a pButton routerLink="/author/posts" variant="text"><i class="pi pi-arrow-left" aria-hidden="true"></i> Your
+      stories</a>
+    @if (!initialized() || loadingDraft()) {
+    <p class="mt-8 text-muted-color" role="status">Loading your workspace...</p>
+    } @else if (!session.user()) {
+    <section class="mx-auto mt-12 max-w-lg text-center">
+      <h1 class="text-3xl font-semibold">Sign in to write</h1>
+      <p class="my-4 text-muted-color">Your stories and drafts are saved to your account.</p>
+      <a pButton routerLink="/" variant="outlined">Sign in</a>
+    </section>
+    } @else {
+    <section class="mt-6" aria-labelledby="writer-title">
+      <p class="text-sm text-muted-color">AUTHOR WORKSPACE</p>
+      <h1 id="writer-title" class="my-2 text-3xl font-semibold">{{ draftId ? 'Edit draft' : 'New post' }}</h1>
+      <p class="mb-6 text-muted-color">Save a draft first. You can publish it whenever it is ready.</p>
+      <p class="mb-3 text-sm text-muted-color"><span class="required-mark" aria-hidden="true">*</span> Required fields</p>
+      <form novalidate class="grid gap-5" (ngSubmit)="saveDraft()">
+        <div>
+          <label for="post-title" class="mb-2 block font-medium">Title <span class="required-mark" aria-hidden="true">*</span></label>
+          <input pInputText id="post-title" name="title" [(ngModel)]="title" [disabled]="saving()" (blur)="validation.touch('title')" [attr.aria-invalid]="!!fieldError('title')" [attr.aria-describedby]="fieldError('title') ? 'post-title-error' : null" maxlength="140" required class="w-full"
+            placeholder="Give your story a title" />
+          @if (fieldError('title')) { <p id="post-title-error" class="field-error">{{ fieldError('title') }}</p> }
+        </div>
+        <div>
+          <label for="post-summary" class="mb-2 block font-medium">Short description <span class="required-mark" aria-hidden="true">*</span></label>
+          <textarea pTextarea id="post-summary" name="summary" [(ngModel)]="summary" [disabled]="saving()" (blur)="validation.touch('summary')" [attr.aria-invalid]="!!fieldError('summary')" [attr.aria-describedby]="fieldError('summary') ? 'post-summary-error' : null" maxlength="260" rows="2"
+            [autoResize]="true" required class="w-full" placeholder="What is this story about?"></textarea>
+          @if (fieldError('summary')) { <p id="post-summary-error" class="field-error">{{ fieldError('summary') }}</p> }
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label for="post-category" class="mb-2 block font-medium">Category <span class="required-mark" aria-hidden="true">*</span></label>
+            <input pInputText id="post-category" name="category" [(ngModel)]="category" [disabled]="saving()" (blur)="validation.touch('category')" [attr.aria-invalid]="!!fieldError('category')" [attr.aria-describedby]="fieldError('category') ? 'post-category-error' : null" maxlength="48" required
+              class="w-full" />
+          @if (fieldError('category')) { <p id="post-category-error" class="field-error">{{ fieldError('category') }}</p> }
+          </div>
+          <div>
+            <label for="author-bio" class="mb-2 block font-medium">Your author bio</label>
+            <input pInputText id="author-bio" name="bio" [(ngModel)]="bio" [disabled]="saving()" (blur)="validation.touch('bio')" [attr.aria-invalid]="!!fieldError('bio')" [attr.aria-describedby]="fieldError('bio') ? 'post-bio-error' : null" maxlength="240" class="w-full"
+              placeholder="A short introduction for your profile" />
+          @if (fieldError('bio')) { <p id="post-bio-error" class="field-error">{{ fieldError('bio') }}</p> }
+          </div>
+        </div>
+        <div>
+          <label for="post-thumbnail" class="mb-2 block font-medium">Thumbnail image URL (optional)</label>
+          <input pInputText id="post-thumbnail" name="thumbnail" type="url" [(ngModel)]="thumbnail"
+            [disabled]="saving()" (blur)="validation.touch('thumbnail')" maxlength="2048" class="w-full"
+            placeholder="https://example.com/cover.jpg" [attr.aria-invalid]="!!fieldError('thumbnail')"
+            [attr.aria-describedby]="fieldError('thumbnail') ? 'post-thumbnail-error' : 'post-thumbnail-hint'" />
+          <p id="post-thumbnail-hint" class="mt-1 text-sm text-muted-color">Used on article cards and at the top of your story. Leave blank to use the default cover.</p>
+          @if (fieldError('thumbnail')) { <p id="post-thumbnail-error" class="field-error">{{ fieldError('thumbnail') }}</p> }
+        </div>
+        <div>
+          <label class="mb-2 block font-medium" id="post-body-label">Story <span class="required-mark" aria-hidden="true">*</span></label>
+          <app-text-editor [value]="body" (valueChange)="body = $event" (processingChange)="imageProcessing.set($event)" [disabled]="saving()" labelledBy="post-body-label" [required]="true" (touched)="validation.touch('body')"
+            [invalid]="!!fieldError('body')" [attr.aria-invalid]="!!fieldError('body')" [describedBy]="fieldError('body') ? 'post-body-error' : ''" />
+          @if (fieldError('body')) { <p id="post-body-error" class="field-error">{{ fieldError('body') }}</p> }
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-surface pt-5">
+
+          <div class="flex flex-wrap gap-2">
+            <button pButton type="submit" variant="outlined" [disabled]="saving() || imageProcessing() || !store.ready()">
+              <i class="pi pi-save" aria-hidden="true"></i> Save draft
+            </button>
+            <button pButton type="button" [disabled]="!draftId || saving() || imageProcessing()" (click)="publish()">
+              <i class="pi pi-send" aria-hidden="true"></i> Publish
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </section>
+    }
+  </div>
+</main>

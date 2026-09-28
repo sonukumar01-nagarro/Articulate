@@ -1,0 +1,9 @@
+<button pButton type="button" severity="primary" text rounded class="fixed right-4 top-4 z-50"
+  [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+  [attr.aria-pressed]="isDark()" (click)="toggleTheme()">
+  @if (isDark()) {
+    <i class="pi pi-sun" aria-hidden="true"></i>
+  } @else {
+    <i class="pi pi-moon" aria-hidden="true"></i>
+  }
+</button>

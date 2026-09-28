@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function published(id) {
+      return get(/databases/$(database)/documents/posts/$(id)).data.status == 'published';
+    }
+    function text(value, maximum) {
+      return value is string && value.size() > 0 && value.size() <= maximum;
+    }
+    function validPost(id) {
+      let p = request.resource.data;
+      return p.keys().hasAll(['id', 'ownerId', 'authorId', 'authorName', 'photo', 'status', 'updatedAt', 'title', 'summary', 'category', 'bio', 'body'])
+        && p.keys().hasOnly(['id', 'ownerId', 'authorId', 'authorName', 'photo', 'status', 'updatedAt', 'title', 'summary', 'category', 'bio', 'body', 'thumbnail'])
+        && (!p.keys().hasAny(['thumbnail']) || (p.thumbnail is string && p.thumbnail.size() <= 2048
+          && (p.thumbnail == '' || p.thumbnail.matches('https://.*'))))
+        && p.id == id && p.ownerId == request.auth.uid && p.authorId == request.auth.uid
+        && text(p.authorName, 256) && (p.photo == null || (p.photo is string && p.photo.size() <= 2048))
+        && p.status in ['draft', 'published'] && text(p.updatedAt, 32)
+        && text(p.title, 140) && text(p.summary, 260) && text(p.category, 48)
+        && p.bio is string && p.bio.size() <= 240 && text(p.body, 500000);
+    }
+    match /posts/{id} {
+      // New draft transactions must also be allowed to read an absent document.
+      allow get: if (signedIn() && !exists(/databases/$(database)/documents/posts/$(id)))
+        || resource.data.status == 'published' || (signedIn() && resource.data.ownerId == request.auth.uid);
+      allow list: if resource.data.status == 'published' || (signedIn() && resource.data.ownerId == request.auth.uid);
+      allow create: if signedIn() && validPost(id) && request.resource.data.status == 'draft';
+      allow update: if signedIn() && resource.data.ownerId == request.auth.uid
+        && resource.data.status == 'draft' && validPost(id);
+      allow delete: if false;
+    }
+    match /comments/{id} {
+      // Comments are public; creation only permits references to published posts.
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll(['id', 'articleId', 'parentId', 'authorId', 'authorName', 'text', 'createdAt', 'likedBy'])
+        && request.resource.data.keys().hasOnly(['id', 'articleId', 'parentId', 'authorId', 'authorName', 'text', 'createdAt', 'likedBy'])
+        && request.resource.data.id == id
+        && request.resource.data.authorId == request.auth.uid
+        && text(request.resource.data.authorName, 256)
+        && text(request.resource.data.articleId, 128) && published(request.resource.data.articleId)
+        && text(request.resource.data.text, 3000) && text(request.resource.data.createdAt, 32)
+        && request.resource.data.likedBy == []
+        && (request.resource.data.parentId == null ||
+          (request.resource.data.parentId is string && request.resource.data.parentId != id &&
+            get(/databases/$(database)/documents/comments/$(request.resource.data.parentId)).data.articleId == request.resource.data.articleId));
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likedBy'])
+        && request.resource.data.likedBy is list
+        && request.resource.data.likedBy.size() == request.resource.data.likedBy.toSet().size()
+        && request.resource.data.likedBy.toSet().difference(resource.data.likedBy.toSet()).hasOnly([request.auth.uid])
+        && resource.data.likedBy.toSet().difference(request.resource.data.likedBy.toSet()).hasOnly([request.auth.uid]);
+      allow delete: if false;
+    }
+  }
+}

@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+@import 'tailwindcss-primeui';
+@import 'primeicons/primeicons.css';
+
+@custom-variant dark (&:where(.app-dark, .app-dark *));
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  html.app-dark {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+  }
+}
+
+.article-content, .article-body { min-width: 0; overflow-wrap: anywhere; }
+.article-body { max-width: 100%; }
+.article-body p { margin-bottom: 1em; white-space: pre-wrap; }
+.article-body h1, .article-body h2, .article-body h3 {
+  margin-block: 1.25em .5em;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+}
+.article-body h1 { font-size: var(--text-3xl); }
+.article-body h2 { font-size: var(--text-2xl); }
+.article-body h3 { font-size: var(--text-xl); }
+.article-body img { display: block; max-width: 100%; height: auto; margin-block: 1.5rem; object-fit: contain; border-radius: var(--radius-lg); }
+.article-body ol { list-style: decimal; padding-left: 1.5em; margin-block: 1em; }
+.article-body ul { list-style: disc; padding-left: 1.5em; margin-block: 1em; }
+.article-body li > ol, .article-body li > ul { margin-block: .25em; }
+.article-body strong { font-weight: var(--font-weight-bold); }
+.article-body em { font-style: italic; }
+.article-body a { text-decoration: underline; }
+
+.required-mark, .field-error { color: var(--color-red-700); }
+.app-dark .required-mark, .app-dark .field-error { color: var(--color-red-300); }
+.field-error { display: block; margin-top: .375rem; font-size: .875rem; }
+input[aria-invalid="true"], textarea[aria-invalid="true"],
+app-text-editor[aria-invalid="true"] { border: 1px solid var(--color-red-600); border-radius: .5rem; }

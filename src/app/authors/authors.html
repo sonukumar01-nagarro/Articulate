@@ -1,0 +1,42 @@
+<main class="min-h-screen bg-surface-50 text-color dark:bg-surface-950">
+  <app-site-header />
+  <div class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
+    <div class="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+      <div>
+        <h1 class="mb-3 text-4xl font-semibold">Meet the authors</h1>
+        <p class="text-muted-color">Find a new perspective. Get to know the people behind the stories.</p>
+      </div>
+      <div>
+        <label for="author-search" class="sr-only">Search authors by name</label>
+        <input pInputText id="author-search" type="search" [(ngModel)]="query" placeholder="Search authors by name" class="w-full sm:w-72" />
+      </div>
+    </div>
+    @if (publishing.publicError()) {
+      <p role="alert">{{ publishing.publicError() }}</p>
+    } @else if (!publishing.publicReady()) {
+      <p role="status">Loading authors...</p>
+    } @else {
+    <p class="mb-4 text-sm text-muted-color" aria-live="polite">{{ authors.length }} {{ authors.length === 1 ? 'author' : 'authors' }}</p>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      @for (author of authors; track author.id) {
+        <p-card>
+          <ng-template #content>
+            <p-avatar [image]="author.image" [ariaLabel]="author.name" shape="circle" size="xlarge" />
+            <h2 class="mb-2 text-xl font-semibold">{{ author.name }}</h2>
+            <p class="leading-relaxed text-muted-color">{{ author.bio }}</p>
+            <p class="text-sm text-muted-color">{{ articleCount(author.id) }} {{ articleCount(author.id) === 1 ? 'article' : 'articles' }}</p>
+          </ng-template>
+          <ng-template #footer>
+            <a pButton [routerLink]="['/authors', author.id]" variant="outlined" [attr.aria-label]="'View articles by ' + author.name">
+              View articles <i class="pi pi-arrow-right" aria-hidden="true"></i>
+            </a>
+          </ng-template>
+        </p-card>
+      } @empty {
+        <p class="text-muted-color" role="status">No authors found. Try another name.</p>
+      }
+    </div>
+    }
+  </div>
+</main>
+

@@ -1,0 +1,69 @@
+<main class="min-h-screen bg-surface-50 text-color dark:bg-surface-950">
+  <app-site-header />
+  <div class="mx-auto max-w-6xl px-5 py-10 sm:px-8">
+    <a pButton routerLink="/home" variant="text"><i class="pi pi-arrow-left" aria-hidden="true"></i> Back to articles</a>
+    @if (article(); as article) {
+      <article class="article-content mx-auto mt-6 max-w-3xl">
+        <p-tag [value]="article.category" severity="secondary" />
+        <h1 class="my-5 text-4xl font-semibold leading-tight sm:text-5xl">{{ article.title }}</h1>
+        <p class="mb-6 text-xl leading-relaxed text-muted-color">{{ article.description }}</p>
+        <div class="mb-8 flex flex-wrap items-center gap-3">
+          @if (author(); as author) {
+            <p-avatar [image]="author.image" [ariaLabel]="author.name" shape="circle" size="large" />
+          }
+          <div>
+            <a [routerLink]="['/authors', article.authorId]" class="font-medium text-color hover:underline">{{ article.author }}</a>
+            <p class="mt-1 text-sm text-muted-color"><time [attr.datetime]="article.publishedAt">{{ article.publishedAt | date:'longDate' }}</time></p>
+          </div>
+        </div>
+        <img [src]="article.thumbnail" [alt]="article.title" class="mb-8 aspect-[16/9] w-full rounded-lg object-cover" />
+        <div class="text-lg leading-loose">
+          @if (article.htmlContent) {
+            <div class="article-body" [innerHTML]="article.htmlContent"></div>
+          } @else {
+            @for (paragraph of article.content; track $index) {
+              <p class="mb-6">{{ paragraph }}</p>
+            }
+          }
+        </div>
+        @if (author(); as author) {
+          <p-card class="my-10 block">
+            <ng-template #content>
+              <div class="flex items-start gap-4">
+                <p-avatar [image]="author.image" [ariaLabel]="author.name" shape="circle" size="large" />
+                <div class="min-w-0">
+                  <h2 class="mb-2 mt-0 text-xl font-semibold">About {{ author.name }}</h2>
+                  <p class="leading-relaxed text-muted-color">{{ author.bio }}</p>
+                  <a pButton [routerLink]="['/authors', author.id]" variant="text" class="ml-[-10px] mt-10">More from this author <i class="pi pi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+              </div>
+            </ng-template>
+          </p-card>
+        }
+      </article>
+      @if (related().length) {
+        <section class="my-12" aria-labelledby="related-title">
+          <h2 id="related-title" class="mb-5 text-2xl font-semibold">Related articles</h2>
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            @for (relatedArticle of related(); track relatedArticle.id) {
+              <app-article-card [article]="relatedArticle" />
+            }
+          </div>
+        </section>
+      }
+      <div class="mx-auto max-w-3xl">
+        @for (id of [article.id]; track id) {
+          <app-comments [articleId]="id" />
+        }
+      </div>
+    } @else if (publishing.publicError()) {
+      <p role="alert">{{ publishing.publicError() }}</p>
+    } @else if (!publishing.publicReady()) {
+      <p role="status">Loading article...</p>
+    } @else {
+      <h1 class="mt-8 text-3xl font-semibold">Article not found</h1>
+      <p class="text-muted-color">This story is unavailable. Browse home to find another article.</p>
+    }
+  </div>
+</main>
+
