@@ -2,7 +2,7 @@
 
 Articulate is a story publishing app where writers create and publish articles and readers discover authors and join discussions.
 
-Live Demo - https://github.com/sonukumar01-nagarro/Articulate
+Live Demo - https://sonukumar01-nagarro.github.io/Articulate/
 
 ## Features
 
